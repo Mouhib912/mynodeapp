@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nagios-config
+data:
+  nagios.cfg: |
+    # Nagios configuration file (exemple de contenu de nagios.cfg)
+    log_file=/var/log/nagios/nagios.log
+    cfg_file=/opt/nagios/etc/objects/localhost.cfg
+
+  commands.cfg: |
+    # Fichier de commandes Nagios pour ajouter des vérifications spécifiques
+    define command {
+      command_name check_http
+      command_line /opt/nagios/libexec/check_http -H $HOSTADDRESS$
+    }
+
+  hosts.cfg: |
+    define host {
+      use             linux-server
+      host_name       k8s-node
+      alias           Kubernetes Node
+      address         <k8s-node-ip>
+    }
+
+  services.cfg: |
+    define service {
+      use                     generic-service
+      host_name               k8s-node
+      service_description     HTTP Check
+      check_command           check_http!<service-ip>!-p 80 -u /
+    }
+

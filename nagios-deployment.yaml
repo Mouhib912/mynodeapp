@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nagios
+  labels:
+    app: nagios
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nagios
+  template:
+    metadata:
+      labels:
+        app: nagios
+    spec:
+      containers:
+      - name: nagios
+        image: jasonrivers/nagios
+        ports:
+        - containerPort: 80
+        env:
+        - name: NAGIOSADMIN_USER
+          valueFrom:
+            secretKeyRef:
+              name: nagios-secret
+              key: nagiosadmin
+        - name: NAGIOSADMIN_PASS
+          valueFrom:
+            secretKeyRef:
+              name: nagios-secret
+              key: mouhib
+        volumeMounts:
+        - name: nagios-config
+          mountPath: /opt/nagios/etc
+        - name: nagios-plugins
+          mountPath: /opt/nagios/libexec
+      volumes:
+      - name: nagios-config
+        configMap:
+          name: nagios-config
+      - name: nagios-plugins
+        emptyDir: {}
+
